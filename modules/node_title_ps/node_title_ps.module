@@ -1,0 +1,98 @@
+<?php
+
+/**
+ * @file
+ * Contains node_title_ps.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_help().
+ */
+function node_title_ps_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the node_title_ps module.
+    case 'help.page.node_title_ps':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Add prefix and suffix for node title') . '</p>';
+
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function node_title_ps_form_node_type_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  node_title_ps_new_form_elements($form);
+}
+
+/**
+ * Save prefix anf suffix variables.
+ */
+function node_title_ps_save(&$form, FormStateInterface $form_state) {
+  $config = \Drupal::getContainer()->get('config.factory')
+    ->getEditable('node.type.' . $form_state->getValue('type'));
+  $config->set('node_title_ps', [
+    'title_prefix' => $form_state->getValue('title_prefix'),
+    'title_suffix' => $form_state->getValue('title_suffix'),
+  ]);
+  $config->save();
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function node_title_ps_preprocess_field(&$variables) {
+  if ($variables['element']['#field_name'] == 'title') {
+    $node_type_name = $variables['element']['#bundle'];
+    $config = \Drupal::config('node.type.' . $node_type_name);
+    $node_title_ps = $config->get('node_title_ps');
+    array_unshift($variables['items'], node_title_ps_generate($node_title_ps['title_prefix']));
+    $variables['items'][] = node_title_ps_generate($node_title_ps['title_suffix']);
+  }
+}
+
+/**
+ * Add new elements to form.
+ */
+function node_title_ps_new_form_elements(&$form) {
+  $node_title_ps = NULL;
+  if ($node_type_name = $form['type']['#default_value']) {
+    $config = \Drupal::config('node.type.' . $node_type_name);
+    $node_title_ps = $config->get('node_title_ps');
+  };
+  $form['submission']['title_prefix'] = [
+    '#type' => 'textfield',
+    '#title' => t('Prefix'),
+    '#weight' => 0,
+    '#default_value' => !is_null($node_title_ps) ? $node_title_ps['title_prefix'] : '',
+  ];
+  $form['submission']['title_suffix'] = [
+    '#type' => 'textfield',
+    '#title' => t('Suffix'),
+    '#weight' => 0,
+    '#default_value' => !is_null($node_title_ps) ? $node_title_ps['title_suffix'] : '',
+  ];
+  $form['actions']['submit']['#submit'][] = 'node_title_ps_save';
+}
+
+/**
+ * Generate array render.
+ */
+function node_title_ps_generate($value) {
+  return [
+    'content' => [
+      "#type" => "inline_template",
+      "#template" => "{{ value }}",
+      '#context' => [
+        'value' => $value,
+      ],
+    ],
+  ];
+}

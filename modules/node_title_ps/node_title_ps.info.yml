@@ -1,0 +1,11 @@
+name: 'Title Prefix'
+type: module
+description: 'Add prefix and suffix for node title'
+# core: 8.x
+package: 'Custom'
+
+# Information added by Drupal.org packaging script on 2018-04-02
+version: '8.x-2.0-beta1'
+core: '8.x'
+project: 'node_title_ps'
+datestamp: 1522669095

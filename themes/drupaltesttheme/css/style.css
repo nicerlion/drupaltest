@@ -1,0 +1,18 @@
+/**
+ * If using a CSS pre-processor, tell it to overwrite this file. If not, place
+ * your custom CSS modifications here.
+ */
+
+body {
+  min-height: 100vh;
+  background-color:rgba(0,0,139,1);
+  background-image: linear-gradient(180deg, rgba(173,216,230,1) 90%, rgba(0,0,139,1) 100%);
+}
+
+.field--type-image img {
+  border: 3px solid gray;
+}
+
+.field--type-image img:hover {
+  border: 3px solid transparent;
+}
